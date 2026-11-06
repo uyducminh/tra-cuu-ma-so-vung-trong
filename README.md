@@ -4,9 +4,13 @@ Trang tĩnh (GitHub Pages) để tra cứu mã vùng trồng và mã cơ sở đ
 
 - Tìm theo mã nội địa, mã GACC (QVNM...), tên hoặc địa chỉ. Cách viết khác nhau (khoảng trắng, Đ/D, số 0 ở đầu, đuôi -CHN) vẫn tìm được.
 - Lọc theo kết luận, loại mã, tỉnh/TP (địa giới mới), sản phẩm, độ tin cậy, hạn chế sản phẩm.
-- Kiểm tra nhiều mã cùng lúc (dán danh sách) và tải kết quả CSV.
+- Kiểm tra nhiều mã cùng lúc (dán danh sách).
 - Xem chi tiết từng mã: các mã GACC, ngày hiệu lực, trạng thái, hạn chế theo sản phẩm, có trong nguồn nào, điểm cần kiểm tra.
 - Liên kết trực tiếp tới một mã: `?ma=VN-TGOR-0085`.
+
+## Mã PIN
+
+Vào trang cần nhập mã PIN. Dữ liệu trong repo đã được mã hoá theo mã PIN (AES-GCM, khoá sinh bằng PBKDF2), nên không đọc được nếu không có PIN. Mã PIN không được lưu trong repo. Muốn đổi PIN thì chạy lại lệnh cập nhật dữ liệu với PIN mới.
 
 ## Nguồn và nguyên tắc
 
@@ -24,10 +28,11 @@ Mã chỉ có ở nguồn Việt Nam, không có trên Chinaport, được ghi l
 2. Chạy:
 
    ```
-   python3 tools/xay_du_lieu.py Tong_hop_ma_so_vung_trong_dong_goi_Chinaport_txng_ppd.xlsx 2026-11-06
+   pip install cryptography
+   MA_PIN='<mã PIN>' python3 tools/xay_du_lieu.py Tong_hop_ma_so_vung_trong_dong_goi_Chinaport_txng_ppd.xlsx 2026-11-06
    ```
 
-   Lệnh ghi lại `data/ma_so.json`. Tham số thứ hai là ngày tải dữ liệu, hiện ở đầu trang.
-3. Commit file `data/ma_so.json`.
+   Lệnh ghi lại `data/ma_so.enc.json` (đã mã hoá theo mã PIN). Tham số thứ hai là ngày tải dữ liệu, hiện ở đầu trang.
+3. Commit file `data/ma_so.enc.json`.
 
 Trang này không phải trang chính thức của cơ quan nhà nước. Trước khi khai báo xuất khẩu, nên kiểm tra lại trên Chinaport.

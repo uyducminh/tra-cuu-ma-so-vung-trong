@@ -1,17 +1,23 @@
 """Tạo file dữ liệu cho trang tra cứu từ file Excel tổng hợp.
 
-Cách dùng:
-    python3 tools/xay_du_lieu.py Tong_hop_ma_so_vung_trong_dong_goi_Chinaport_txng_ppd.xlsx 2026-11-06
+Cách dùng (cần thư viện cryptography: pip install cryptography):
+    MA_PIN='<mã PIN>' python3 tools/xay_du_lieu.py Tong_hop_ma_so_vung_trong_dong_goi_Chinaport_txng_ppd.xlsx 2026-11-06
+
+Dữ liệu được nén và mã hoá AES-GCM bằng khoá sinh từ mã PIN (PBKDF2-SHA256),
+nên chỉ người có mã PIN mới đọc được. Không ghi mã PIN vào repo.
 
 File Excel cần các sheet: "Tổng hợp mã", "Chinaport - đã duyệt GACC",
-"Đối chiếu ppd", "Đối chiếu txng.mae". Kết quả ghi ra data/ma_so.json.
+"Đối chiếu ppd", "Đối chiếu txng.mae". Kết quả ghi ra data/ma_so.enc.json.
 """
-import json, sys, re
+import json, sys, re, os, gzip, base64
 from pathlib import Path
 import pandas as pd
 
 src, ngay = sys.argv[1], (sys.argv[2] if len(sys.argv) > 2 else '')
-out = Path(__file__).resolve().parent.parent / 'data' / 'ma_so.json'
+out = Path(__file__).resolve().parent.parent / 'data' / 'ma_so.enc.json'
+pin = os.environ.get('MA_PIN')
+if not pin:
+    sys.exit('Thiếu mã PIN: đặt biến môi trường MA_PIN')
 x = pd.read_excel(src, sheet_name=None, dtype=str)
 M = x['Tổng hợp mã'].fillna('')
 C = x['Chinaport - đã duyệt GACC'].fillna('')
@@ -64,5 +70,14 @@ for _, r in M.iterrows():
 data = {'ngay': ngay, 'kl': KL, 'dicts': dicts,
         'cols': ['ma', 'gacc', 'ten', 'tinh', 'loai', 'sp', 'kl', 'hanche', 'ngay', 'nguon', 'hosovn', 'tincay', 'vande', 'diachi', 'ppd'],
         'rows': rows, 'gacc_cols': ['ma_vn', 'ten', 'diachi', 'loaihinh', 'sp', 'tu', 'den', 'trangthai', 'hanche', 'ten_vn'], 'gacc': gacc}
-out.write_text(json.dumps(data, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
-print(f'Đã ghi {out} ({len(rows)} mã, {len(gacc)} mã GACC, {out.stat().st_size/1e6:.1f} MB)')
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives import hashes
+ITER = 250000
+salt, iv = os.urandom(16), os.urandom(12)
+key = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=ITER).derive(pin.encode('utf-8'))
+plain = gzip.compress(json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode('utf-8'), 9)
+ct = AESGCM(key).encrypt(iv, plain, None)
+b = lambda x: base64.b64encode(x).decode()
+out.write_text(json.dumps({'v': 1, 'iter': ITER, 'salt': b(salt), 'iv': b(iv), 'ct': b(ct)}), encoding='utf-8')
+print(f'Đã ghi {out} ({len(rows)} mã, {len(gacc)} mã GACC, {out.stat().st_size/1e6:.2f} MB, đã mã hoá)')

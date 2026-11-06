@@ -58,11 +58,16 @@ h3{font-size:14px;margin:14px 0 6px;color:var(--g)}
 .note{font-size:12.5px;color:var(--mut);line-height:1.5}
 .bulkres td{font-size:13px}
 .nf{background:#fdecec}
+#gate{position:fixed;inset:0;background:var(--g);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+#gate form{background:#fff;border-radius:12px;padding:24px;width:min(380px,100%);display:flex;flex-direction:column;gap:10px;text-align:center}
+#gate h2{margin:0;font-size:17px;color:var(--g)}#gate p{margin:0;color:var(--mut)}#gate input{font:inherit;font-size:16px;padding:10px;border:1px solid var(--bd);border-radius:6px;text-align:center}
+#gate-err{color:#c00;font-size:13px;min-height:18px}
 footer{max-width:1280px;margin:0 auto;padding:6px 14px 30px;font-size:12px;color:var(--mut);line-height:1.6}
 @media (max-width:640px){.kv{grid-template-columns:1fr}.hide-m{display:none}}
 </style>
 </head>
 <body>
+<div id="gate"><form id="gate-f"><h2>Tra cứu mã số vùng trồng, cơ sở đóng gói</h2><p>Nhập mã PIN để sử dụng</p><input type="password" id="pin" autocomplete="current-password" placeholder="Mã PIN"><button type="submit">Vào</button><div id="gate-err"></div></form></div>
 <header>
   <h1>Tra cứu mã số vùng trồng, cơ sở đóng gói xuất khẩu Trung Quốc</h1>
   <p id="sub">Đang tải dữ liệu...</p>
@@ -72,9 +77,8 @@ footer{max-width:1280px;margin:0 auto;padding:6px 14px 30px;font-size:12px;color
   <div class="tabs"><div class="tab on" data-t="tim">Tìm kiếm</div><div class="tab" data-t="nhieu">Kiểm tra nhiều mã</div><div class="tab" data-t="gt">Giải thích</div></div>
   <div class="panel" id="p-tim">
     <div class="row">
-      <input type="search" id="q" placeholder="Nhập mã vùng trồng, mã đóng gói, mã GACC (QVNM...), tên hoặc địa chỉ" autofocus>
+      <input type="search" id="q" placeholder="Nhập mã vùng trồng, mã đóng gói, mã GACC (QVNM...), tên hoặc địa chỉ">
       <button class="ghost" id="reset">Xoá lọc</button>
-      <button id="csv">Tải CSV</button>
     </div>
     <div class="row" style="margin-top:8px">
       <select id="f-kl"><option value="">Mọi kết luận</option></select>
@@ -95,7 +99,7 @@ footer{max-width:1280px;margin:0 auto;padding:6px 14px 30px;font-size:12px;color
   <div class="panel" id="p-nhieu" hidden>
     <p class="note">Dán danh sách mã (mỗi dòng một mã, hoặc cách nhau bằng dấu phẩy). Có thể dán mã nội địa hoặc mã GACC. Cách viết khác nhau (khoảng trắng, Đ/D, số 0 ở đầu) vẫn tìm được.</p>
     <textarea id="bulk" rows="8" style="width:100%" placeholder="VN-DLOR-0073&#10;66-PUC-SR0001-00518-CHN&#10;QVNM1424052703669"></textarea>
-    <div class="row" style="margin-top:8px"><button id="bulk-go">Kiểm tra</button><button class="ghost" id="bulk-csv">Tải kết quả CSV</button><span id="bulk-sum" class="note"></span></div>
+    <div class="row" style="margin-top:8px"><button id="bulk-go">Kiểm tra</button><span id="bulk-sum" class="note"></span></div>
     <div class="tw" style="margin-top:10px"><table class="bulkres"><thead><tr><th>#</th><th>Mã đã nhập</th><th>Mã nội địa</th><th>Mã GACC</th><th>Tên cơ sở</th><th>Kết luận</th><th>Hạn chế / ghi chú</th></tr></thead><tbody id="bulk-tb"></tbody></table></div>
   </div>
   <div class="panel" id="p-gt" hidden>
@@ -127,7 +131,24 @@ let D,R=[],view=[],page=0,klCard=null;const PS=50;
 const fmtD=s=>s?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):'';
 const n=x=>x.toLocaleString('vi-VN');
 
-fetch('data/ma_so.json').then(r=>r.json()).then(d=>{D=d;init()}).catch(e=>{$('#sub').textContent='Không tải được dữ liệu: '+e});
+const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+let ENC=null;
+async function unlock(pin){
+  if(!ENC)ENC=await fetch('data/ma_so.enc.json',{cache:'no-cache'}).then(r=>r.json());
+  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveKey']);
+  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(ENC.salt),iterations:ENC.iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+  const gz=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(ENC.iv)},key,b64(ENC.ct));
+  const txt=await new Response(new Blob([gz]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+  return JSON.parse(txt);
+}
+async function tryPin(pin,silent){
+  $('#gate-err').textContent=silent?'':'Đang mở...';
+  try{D=await unlock(pin);sessionStorage.setItem('pin',pin);$('#gate').remove();init()}
+  catch(e){sessionStorage.removeItem('pin');$('#gate-err').textContent=silent?'':(e&&e.name==='OperationError'?'Mã PIN không đúng':'Không tải được dữ liệu: '+e)}
+}
+$('#gate-f').onsubmit=e=>{e.preventDefault();tryPin($('#pin').value.trim())};
+$('#pin').focus();
+if(sessionStorage.getItem('pin'))tryPin(sessionStorage.getItem('pin'),true);
 
 function init(){
   const P=D.dicts;
@@ -153,12 +174,11 @@ function init(){
   let t;$('#q').oninput=()=>{clearTimeout(t);t=setTimeout(run,180)};
   ['#f-kl','#f-loai','#f-tinh','#f-sp','#f-tc','#f-hc','#f-vd'].forEach(s=>$(s).onchange=run);
   $('#reset').onclick=()=>{$('#q').value='';['#f-kl','#f-loai','#f-tinh','#f-sp','#f-tc'].forEach(s=>$(s).value='');$('#f-hc').checked=$('#f-vd').checked=false;run()};
-  $('#csv').onclick=()=>dl(view,'tra_cuu_ma_so.csv');
   document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));['tim','nhieu','gt'].forEach(k=>$('#p-'+k).hidden=k!==t.dataset.t)});
   $('#d-close').onclick=()=>$('#dlg').close();
   $('#dlg').addEventListener('click',e=>{if(e.target.id==='dlg')$('#dlg').close()});
-  $('#bulk-go').onclick=bulk;$('#bulk-csv').onclick=()=>dlBulk();
-  run();
+  $('#bulk-go').onclick=bulk;
+  run();$('#q').focus();
   if(deep){const r=find(deep)[0];if(r)show(r)}
 }
 const IDX=()=>{if(!window._ix){window._ix=new Map();R.forEach(r=>r.keys.forEach(k=>{if(k){if(!_ix.has(k))_ix.set(k,[]);_ix.get(k).push(r)}}))}return _ix};
@@ -222,12 +242,6 @@ function bulk(){
   $('#bulk-tb').querySelectorAll('tr[data-i]').forEach(tr=>tr.onclick=()=>show(R[+tr.dataset.i]));
   $('#bulk-sum').textContent=`${items.length} mã: ${c[0]} đã duyệt, ${c[1]} tạm dừng, ${c[2]} mới có mã nội địa, ${c[3]} không tìm thấy`;
 }
-const csvc=v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
-const HEAD=['Mã nội địa','Mã GACC','Tên cơ sở','Địa chỉ','Tỉnh/TP (mới)','Loại mã','Sản phẩm','Kết luận','Hạn chế theo sản phẩm','Ngày hiệu lực GACC','Độ tin cậy','Hồ sơ phía Việt Nam','Điểm cần kiểm tra'];
-const line=r=>[r.ma,r.gacc.join('; '),r.ten,r.gacc.map(g=>(D.gacc[g]||[])[2]).find(Boolean)||r.dc,r.tinh,r.loai,r.sp,KLS[r.kl],r.hc,fmtD(r.ngay),r.tc,r.hosovn,r.vd];
-function save(rows,name){const b=new Blob(['﻿'+rows.map(r=>r.map(csvc).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click()}
-function dl(v,name){save([HEAD,...v.map(line)],name)}
-function dlBulk(){if(!bulkRows.length)bulk();save([['Mã đã nhập',...HEAD],...bulkRows.flatMap(b=>b.m.length?b.m.map(r=>[b.s,...line(r)]):[[b.s,'','','','','','','','Không tìm thấy']])],'kiem_tra_nhieu_ma.csv')}
 </script>
 </body>
 </html>
