@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tra cứu mã số vùng trồng, cơ sở đóng gói xuất khẩu Trung Quốc</title>
+<style>
+:root{--g:#1f6f43;--g2:#e2f0d9;--o:#c55a11;--o2:#fce4d6;--y:#8a6d00;--y2:#fff2cc;--bd:#d9dee3;--mut:#5b6670;--bg:#f6f8f7}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#1d2329;background:var(--bg);font-size:14px}
+header{background:var(--g);color:#fff;padding:14px 20px}
+header h1{margin:0;font-size:19px}
+header p{margin:4px 0 0;font-size:12.5px;opacity:.9}
+main{max-width:1280px;margin:0 auto;padding:14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.card{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:10px 12px;cursor:pointer}
+.card:hover{border-color:var(--g)}
+.card.on{outline:2px solid var(--g)}
+.card b{display:block;font-size:22px}
+.card span{font-size:12px;color:var(--mut)}
+.tabs{display:flex;gap:4px;margin-bottom:-1px}
+.tab{padding:8px 14px;border:1px solid var(--bd);border-bottom:none;border-radius:8px 8px 0 0;background:#eef1ef;cursor:pointer}
+.tab.on{background:#fff;font-weight:600}
+.panel{background:#fff;border:1px solid var(--bd);border-radius:0 8px 8px 8px;padding:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input[type=search],select,textarea{font:inherit;border:1px solid var(--bd);border-radius:6px;padding:7px 9px;background:#fff}
+input[type=search]{flex:1 1 320px;font-size:15px}
+select{max-width:220px}
+label.ck{font-size:13px;color:var(--mut);display:flex;gap:4px;align-items:center}
+button{font:inherit;border:1px solid var(--g);background:var(--g);color:#fff;border-radius:6px;padding:7px 12px;cursor:pointer}
+button.ghost{background:#fff;color:var(--g)}
+.meta{margin:10px 0 6px;color:var(--mut);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%}
+th,td{border-bottom:1px solid var(--bd);padding:7px 8px;text-align:left;vertical-align:top}
+th{background:#f0f4f1;font-size:12.5px;white-space:nowrap;position:sticky;top:0}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:#f5faf6}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;white-space:nowrap}
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:12px;white-space:nowrap}
+.k0{background:var(--g2);color:var(--g)}.k1{background:var(--o2);color:var(--o)}.k2{background:var(--y2);color:var(--y)}
+.c-Cao{color:var(--g)}.c-Trung{color:var(--o)}.c-Chưa{color:var(--mut)}
+.warn{color:var(--o);font-size:12px}
+.pager{display:flex;gap:6px;justify-content:center;margin-top:10px;align-items:center}
+.pager button{padding:4px 10px}
+dialog{border:none;border-radius:10px;padding:0;width:min(900px,96vw);max-height:92vh}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+.dh{background:var(--g);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.dh h2{margin:0;font-size:17px}
+.db{padding:14px 16px;overflow:auto;max-height:calc(92vh - 60px)}
+.kv{display:grid;grid-template-columns:190px 1fr;gap:6px 12px;margin-bottom:12px}
+.kv div:nth-child(odd){color:var(--mut)}
+.src{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.src span{border:1px solid var(--bd);border-radius:6px;padding:3px 8px;font-size:12.5px}
+.src .y{background:var(--g2);border-color:#b9d9a8}
+.src .n{color:#9aa3ab}
+h3{font-size:14px;margin:14px 0 6px;color:var(--g)}
+.note{font-size:12.5px;color:var(--mut);line-height:1.5}
+.bulkres td{font-size:13px}
+.nf{background:#fdecec}
+footer{max-width:1280px;margin:0 auto;padding:6px 14px 30px;font-size:12px;color:var(--mut);line-height:1.6}
+@media (max-width:640px){.kv{grid-template-columns:1fr}.hide-m{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Tra cứu mã số vùng trồng, cơ sở đóng gói xuất khẩu Trung Quốc</h1>
+  <p id="sub">Đang tải dữ liệu...</p>
+</header>
+<main>
+  <div class="cards" id="cards"></div>
+  <div class="tabs"><div class="tab on" data-t="tim">Tìm kiếm</div><div class="tab" data-t="nhieu">Kiểm tra nhiều mã</div><div class="tab" data-t="gt">Giải thích</div></div>
+  <div class="panel" id="p-tim">
+    <div class="row">
+      <input type="search" id="q" placeholder="Nhập mã vùng trồng, mã đóng gói, mã GACC (QVNM...), tên hoặc địa chỉ" autofocus>
+      <button class="ghost" id="reset">Xoá lọc</button>
+      <button id="csv">Tải CSV</button>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <select id="f-kl"><option value="">Mọi kết luận</option></select>
+      <select id="f-loai"><option value="">Mọi loại mã</option></select>
+      <select id="f-tinh"><option value="">Mọi tỉnh/TP</option></select>
+      <select id="f-sp"><option value="">Mọi sản phẩm</option></select>
+      <select id="f-tc"><option value="">Mọi độ tin cậy</option></select>
+      <label class="ck"><input type="checkbox" id="f-hc"> Có hạn chế sản phẩm</label>
+      <label class="ck"><input type="checkbox" id="f-vd"> Có điểm cần kiểm tra</label>
+    </div>
+    <div class="meta"><span id="count"></span><span>Bấm vào một dòng để xem chi tiết</span></div>
+    <div class="tw"><table>
+      <thead><tr><th>Mã nội địa</th><th>Mã GACC</th><th>Tên cơ sở</th><th class="hide-m">Tỉnh/TP</th><th class="hide-m">Loại</th><th class="hide-m">Sản phẩm</th><th>Kết luận</th><th class="hide-m">Độ tin cậy</th></tr></thead>
+      <tbody id="tb"></tbody>
+    </table></div>
+    <div class="pager" id="pager"></div>
+  </div>
+  <div class="panel" id="p-nhieu" hidden>
+    <p class="note">Dán danh sách mã (mỗi dòng một mã, hoặc cách nhau bằng dấu phẩy). Có thể dán mã nội địa hoặc mã GACC. Cách viết khác nhau (khoảng trắng, Đ/D, số 0 ở đầu) vẫn tìm được.</p>
+    <textarea id="bulk" rows="8" style="width:100%" placeholder="VN-DLOR-0073&#10;66-PUC-SR0001-00518-CHN&#10;QVNM1424052703669"></textarea>
+    <div class="row" style="margin-top:8px"><button id="bulk-go">Kiểm tra</button><button class="ghost" id="bulk-csv">Tải kết quả CSV</button><span id="bulk-sum" class="note"></span></div>
+    <div class="tw" style="margin-top:10px"><table class="bulkres"><thead><tr><th>#</th><th>Mã đã nhập</th><th>Mã nội địa</th><th>Mã GACC</th><th>Tên cơ sở</th><th>Kết luận</th><th>Hạn chế / ghi chú</th></tr></thead><tbody id="bulk-tb"></tbody></table></div>
+  </div>
+  <div class="panel" id="p-gt" hidden>
+    <h3>Nguồn dữ liệu</h3>
+    <div class="note" id="gt-src"></div>
+    <h3>Cách hiểu kết luận</h3>
+    <div class="note">
+      <p><span class="badge k0">Đã được Trung Quốc duyệt</span> Mã có trên danh sách của Chinaport (scintl.chinaport.gov.cn), đã có mã GACC và đang hiệu lực. Đây là nguồn xác thực cao nhất.</p>
+      <p><span class="badge k1">Có mã GACC, tạm dừng</span> Mã có trên Chinaport nhưng GACC đang tạm dừng.</p>
+      <p><span class="badge k2">Mới có mã nội địa</span> Mã chỉ có ở nguồn Việt Nam (txng.mae, ppd.gov.vn), chưa thấy trên Chinaport. Chưa được dùng để xuất khẩu sang Trung Quốc.</p>
+      <p><b>Hạn chế theo sản phẩm</b>: mã vẫn hiệu lực nhưng GACC ghi "không gồm lô hàng khởi hành từ ngày ... trở đi" cho một số sản phẩm.</p>
+      <p><b>Độ tin cậy</b>: Cao là có trên Chinaport và không có mâu thuẫn; Trung bình là có trên Chinaport nhưng có điểm lệch (tên, tỉnh, lỗi nhập liệu); Chưa xác thực là chưa có trên Chinaport.</p>
+      <p>Tỉnh/TP ghi theo địa giới mới (sau 7/2025). Khi GACC ghi tỉnh khác với địa chỉ, trang này dùng tỉnh theo địa chỉ.</p>
+    </div>
+    <h3>Lưu ý</h3>
+    <div class="note">Dữ liệu là bản chụp tại ngày cập nhật ghi ở đầu trang. Trước khi khai báo xuất khẩu, nên kiểm tra lại trực tiếp trên <a href="https://scintl.chinaport.gov.cn/aprwebserver/pages/apr/public/html/companyList.html" target="_blank" rel="noopener">trang Chinaport</a>.</div>
+  </div>
+</main>
+<dialog id="dlg"><div class="dh"><h2 id="d-title"></h2><button class="ghost" id="d-close" style="background:#fff">Đóng</button></div><div class="db" id="d-body"></div></dialog>
+<footer>Trang tra cứu tĩnh, chạy hoàn toàn trên trình duyệt. Dữ liệu tổng hợp từ Chinaport (GACC), txng.mae.gov.vn và ppd.gov.vn. Không phải trang chính thức của cơ quan nhà nước.</footer>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fold=s=>String(s||'').toLowerCase().replace(/đ/g,'d').normalize('NFD').replace(/[̀-ͯ]/g,'');
+const ckey=s=>String(s||'').toUpperCase().replace(/Đ/g,'D').replace(/(^|[^0-9])0+(?=\d)/g,'$1').replace(/[^A-Z0-9]/g,'').replace(/CHN$/,'');
+const KLS=['Đã được Trung Quốc duyệt','Có mã GACC, tạm dừng','Mới có mã nội địa'];
+const SRC={C:'Chinaport (GACC)',T:'txng.mae',A:'ppd: GACC duyệt 14/8/2026',B:'ppd: đã gửi GACC 22/7/2026',D:'ppd: sầu riêng chờ duyệt 23/7/2026'};
+let D,R=[],view=[],page=0,klCard=null;const PS=50;
+const fmtD=s=>s?s.slice(8,10)+'/'+s.slice(5,7)+'/'+s.slice(0,4):'';
+const n=x=>x.toLocaleString('vi-VN');
+
+fetch('data/ma_so.json').then(r=>r.json()).then(d=>{D=d;init()}).catch(e=>{$('#sub').textContent='Không tải được dữ liệu: '+e});
+
+function init(){
+  const P=D.dicts;
+  R=D.rows.map((r,i)=>{
+    const o={i,ma:r[0],gacc:r[1],ten:r[2],tinh:P.p[r[3]],loai:P.t[r[4]],sp:r[5],kl:r[6],hc:r[7],ngay:r[8],nguon:r[9],hosovn:r[10],tc:P.c[r[11]],vd:r[12],dc:r[13],ppd:r[14]};
+    o.keys=[ckey(o.ma),...o.gacc.map(ckey)];
+    o.txt=fold([o.ma,o.gacc.join(' '),o.ten,o.dc,o.tinh,o.sp].join(' | '));
+    return o});
+  R.sort((a,b)=>(!a.tinh)-(!b.tinh)||a.tinh.localeCompare(b.tinh,'vi')||a.ma.localeCompare(b.ma,'vi',{numeric:true}));R.forEach((r,i)=>r.i=i);
+  $('#sub').textContent=`Dữ liệu cập nhật ngày ${fmtD(D.ngay)} · ${n(R.length)} mã · nguồn: Chinaport, txng.mae, ppd.gov.vn`;
+  $('#gt-src').innerHTML=`<p><b>Chinaport</b>: danh sách đăng ký kiểm dịch của Tổng cục Hải quan Trung Quốc (GACC), nhóm Thực vật, Việt Nam (${n(Object.keys(D.gacc).length)} mã GACC).</p><p><b>txng.mae</b>: danh mục mã số vùng trồng trên txng.mae.gov.vn (Bộ Nông nghiệp và Môi trường).</p><p><b>ppd.gov.vn</b>: danh sách của Cục Trồng trọt và Bảo vệ thực vật: GACC phê duyệt (cập nhật 14/8/2026), đã gửi GACC (22/7/2026), sầu riêng chờ duyệt (23/7/2026).</p><p>Ngày tải dữ liệu: ${fmtD(D.ngay)}.</p>`;
+  const cnt=[0,0,0];R.forEach(r=>cnt[r.kl]++);
+  $('#cards').innerHTML=`<div class="card" data-k=""><b>${n(R.length)}</b><span>Tổng số mã</span></div>`+KLS.map((k,i)=>`<div class="card" data-k="${i}"><b class="" style="color:${['var(--g)','var(--o)','var(--y)'][i]}">${n(cnt[i])}</b><span>${k}</span></div>`).join('');
+  document.querySelectorAll('.card').forEach(c=>c.onclick=()=>{$('#f-kl').value=c.dataset.k;run()});
+  const opt=(id,vals)=>$(id).insertAdjacentHTML('beforeend',vals.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join(''));
+  opt('#f-kl',[]);KLS.forEach((k,i)=>$('#f-kl').insertAdjacentHTML('beforeend',`<option value="${i}">${k}</option>`));
+  const cntBy=f=>{const m={};R.forEach(r=>f(r).forEach(v=>{if(v)m[v]=(m[v]||0)+1}));return Object.entries(m).sort((a,b)=>b[1]-a[1]).map(x=>x[0])};
+  opt('#f-loai',cntBy(r=>r.loai.split('; ')));
+  opt('#f-tinh',cntBy(r=>[r.tinh.split('; ')[0]]).sort((a,b)=>a.localeCompare(b,'vi')));
+  opt('#f-sp',cntBy(r=>r.sp.split('; ')));
+  opt('#f-tc',['Cao','Trung bình','Chưa xác thực']);
+  const u=new URLSearchParams(location.search);if(u.get('q'))$('#q').value=u.get('q');const deep=u.get('ma');
+  let t;$('#q').oninput=()=>{clearTimeout(t);t=setTimeout(run,180)};
+  ['#f-kl','#f-loai','#f-tinh','#f-sp','#f-tc','#f-hc','#f-vd'].forEach(s=>$(s).onchange=run);
+  $('#reset').onclick=()=>{$('#q').value='';['#f-kl','#f-loai','#f-tinh','#f-sp','#f-tc'].forEach(s=>$(s).value='');$('#f-hc').checked=$('#f-vd').checked=false;run()};
+  $('#csv').onclick=()=>dl(view,'tra_cuu_ma_so.csv');
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));['tim','nhieu','gt'].forEach(k=>$('#p-'+k).hidden=k!==t.dataset.t)});
+  $('#d-close').onclick=()=>$('#dlg').close();
+  $('#dlg').addEventListener('click',e=>{if(e.target.id==='dlg')$('#dlg').close()});
+  $('#bulk-go').onclick=bulk;$('#bulk-csv').onclick=()=>dlBulk();
+  run();
+  if(deep){const r=find(deep)[0];if(r)show(r)}
+}
+const IDX=()=>{if(!window._ix){window._ix=new Map();R.forEach(r=>r.keys.forEach(k=>{if(k){if(!_ix.has(k))_ix.set(k,[]);_ix.get(k).push(r)}}))}return _ix};
+const find=s=>IDX().get(ckey(s))||[];
+function run(){
+  const q=$('#q').value.trim(),fq=fold(q),kq=ckey(q);
+  const kl=$('#f-kl').value,lo=$('#f-loai').value,ti=$('#f-tinh').value,sp=$('#f-sp').value,tc=$('#f-tc').value,hc=$('#f-hc').checked,vd=$('#f-vd').checked;
+  let exact=[];
+  if(q){exact=find(q)}
+  const ex=new Set(exact.map(r=>r.i));
+  view=R.filter(r=>{
+    if(kl!==''&&r.kl!=+kl)return false;
+    if(lo&&!r.loai.split('; ').includes(lo))return false;
+    if(ti&&r.tinh.split('; ')[0]!==ti)return false;
+    if(sp&&!r.sp.split('; ').includes(sp))return false;
+    if(tc&&r.tc!==tc)return false;
+    if(hc&&!r.hc)return false;
+    if(vd&&!r.vd)return false;
+    if(!q)return true;
+    if(ex.has(r.i))return true;
+    if(kq.length>=4&&r.keys.some(k=>k.includes(kq)))return true;
+    return fq.split(/\s+/).every(w=>r.txt.includes(w));
+  });
+  if(q)view.sort((a,b)=>ex.has(b.i)-ex.has(a.i));
+  document.querySelectorAll('.card').forEach(c=>c.classList.toggle('on',c.dataset.k===kl));
+  page=0;draw();
+  const u=new URL(location);q?u.searchParams.set('q',q):u.searchParams.delete('q');u.searchParams.delete('ma');history.replaceState(null,'',u);
+}
+const badge=k=>`<span class="badge k${k}">${KLS[k]}</span>`;
+function draw(){
+  const s=view.slice(page*PS,page*PS+PS);
+  $('#count').textContent=view.length?`${n(view.length)} mã phù hợp`:'Không tìm thấy mã phù hợp';
+  $('#tb').innerHTML=s.map(r=>`<tr data-i="${r.i}"><td class="code">${esc(r.ma)}</td><td class="code">${esc(r.gacc[0]||'')}${r.gacc.length>1?` <span class="warn">+${r.gacc.length-1}</span>`:''}</td><td>${esc(r.ten)}${r.hc?'<div class="warn">Có hạn chế sản phẩm</div>':''}</td><td class="hide-m">${esc(r.tinh)}</td><td class="hide-m">${esc(r.loai)}</td><td class="hide-m">${esc(r.sp)}</td><td>${badge(r.kl)}</td><td class="hide-m c-${r.tc.split(' ')[0]}">${esc(r.tc)}</td></tr>`).join('');
+  $('#tb').querySelectorAll('tr').forEach(tr=>tr.onclick=()=>show(R[+tr.dataset.i]));
+  const np=Math.ceil(view.length/PS);
+  $('#pager').innerHTML=np>1?`<button class="ghost" ${page?'':'disabled'} id="pv">‹ Trước</button><span>Trang ${page+1}/${np}</span><button class="ghost" ${page<np-1?'':'disabled'} id="nx">Sau ›</button>`:'';
+  if(np>1){$('#pv').onclick=()=>{page--;draw()};$('#nx').onclick=()=>{page++;draw()}}
+}
+function show(r){
+  $('#d-title').textContent=(r.ma||r.gacc[0]||'')+(r.ten?' · '+r.ten:'');
+  const G=D.gacc;
+  const gt=r.gacc.map(g=>{const x=G[g]||[];return `<tr><td class="code">${esc(g)}</td><td>${esc(x[1])}${x[9]?'<br><span class="note">'+esc(x[9])+'</span>':''}</td><td>${esc(x[4])}</td><td>${fmtD(x[5])}</td><td>${x[6]?fmtD(x[6]):'Không thời hạn'}</td><td>${x[7]==='Tạm dừng'?'<span class="badge k1">Tạm dừng</span>':'<span class="badge k0">Hiệu lực</span>'}</td><td class="warn">${esc(x[8])}</td></tr>`}).join('');
+  const addr=r.gacc.map(g=>(G[g]||[])[2]).find(Boolean)||r.dc;
+  $('#d-body').innerHTML=`<p>${badge(r.kl)} <span class="c-${r.tc.split(' ')[0]}" style="margin-left:6px">Độ tin cậy: ${esc(r.tc)}</span></p>
+  <div class="kv"><div>Mã nội địa</div><div class="code">${esc(r.ma)||'(không có)'}</div><div>Tên cơ sở</div><div>${esc(r.ten)}</div><div>Địa chỉ</div><div>${esc(addr)}</div><div>Tỉnh/TP (mới)</div><div>${esc(r.tinh)}</div><div>Loại mã</div><div>${esc(r.loai)}</div><div>Sản phẩm</div><div>${esc(r.sp)}</div>${r.ngay?`<div>Ngày hiệu lực GACC</div><div>${fmtD(r.ngay)}</div>`:''}${r.hc?`<div>Hạn chế theo sản phẩm</div><div class="warn">${esc(r.hc)}</div>`:''}${r.hosovn?`<div>Hồ sơ phía Việt Nam</div><div>${esc(r.hosovn)}</div>`:''}</div>
+  <h3>Có trong các nguồn</h3><div class="src">${Object.entries(SRC).map(([k,v])=>`<span class="${r.nguon.includes(k)?'y':'n'}">${r.nguon.includes(k)?'✓':'✗'} ${v}</span>`).join('')}</div>
+  ${r.gacc.length?`<h3>Mã GACC trên Chinaport (${r.gacc.length})</h3><div class="tw"><table><thead><tr><th>Mã GACC</th><th>Tên trên Chinaport</th><th>Sản phẩm</th><th>Hiệu lực từ</th><th>Hết hạn</th><th>Trạng thái</th><th>Hạn chế</th></tr></thead><tbody>${gt}</tbody></table></div>`:'<p class="note">Chưa có trên Chinaport: mã này mới có mã nội địa, chưa được Trung Quốc duyệt.</p>'}
+  ${r.ppd.length?`<h3>Ghi chú trong danh sách ppd.gov.vn</h3><ul class="note">${r.ppd.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`:''}
+  ${r.vd?`<h3>Điểm cần kiểm tra</h3><ul class="note">${r.vd.split('; ').map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`:''}
+  <p class="note" style="margin-top:14px">Liên kết tới mã này: <a href="?ma=${encodeURIComponent(r.ma||r.gacc[0])}">${esc(location.origin+location.pathname)}?ma=${esc(r.ma||r.gacc[0])}</a></p>`;
+  $('#dlg').showModal();
+}
+let bulkRows=[];
+function bulk(){
+  const items=$('#bulk').value.split(/[\n,;\t]+/).map(s=>s.trim()).filter(Boolean);
+  bulkRows=items.map(s=>({s,m:find(s)}));
+  const c=[0,0,0,0];
+  $('#bulk-tb').innerHTML=bulkRows.map((b,i)=>{
+    if(!b.m.length){c[3]++;return `<tr class="nf"><td>${i+1}</td><td class="code">${esc(b.s)}</td><td colspan="5">Không tìm thấy trong dữ liệu (chưa có mã nội địa trong các nguồn đã tổng hợp, hoặc mã nhập sai)</td></tr>`}
+    return b.m.map(r=>{c[r.kl]++;return `<tr data-i="${r.i}"><td>${i+1}</td><td class="code">${esc(b.s)}</td><td class="code">${esc(r.ma)}</td><td class="code">${esc(r.gacc.join(', '))}</td><td>${esc(r.ten)}</td><td>${badge(r.kl)}</td><td class="warn">${esc(r.hc)}</td></tr>`}).join('')}).join('');
+  $('#bulk-tb').querySelectorAll('tr[data-i]').forEach(tr=>tr.onclick=()=>show(R[+tr.dataset.i]));
+  $('#bulk-sum').textContent=`${items.length} mã: ${c[0]} đã duyệt, ${c[1]} tạm dừng, ${c[2]} mới có mã nội địa, ${c[3]} không tìm thấy`;
+}
+const csvc=v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+const HEAD=['Mã nội địa','Mã GACC','Tên cơ sở','Địa chỉ','Tỉnh/TP (mới)','Loại mã','Sản phẩm','Kết luận','Hạn chế theo sản phẩm','Ngày hiệu lực GACC','Độ tin cậy','Hồ sơ phía Việt Nam','Điểm cần kiểm tra'];
+const line=r=>[r.ma,r.gacc.join('; '),r.ten,r.gacc.map(g=>(D.gacc[g]||[])[2]).find(Boolean)||r.dc,r.tinh,r.loai,r.sp,KLS[r.kl],r.hc,fmtD(r.ngay),r.tc,r.hosovn,r.vd];
+function save(rows,name){const b=new Blob(['﻿'+rows.map(r=>r.map(csvc).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click()}
+function dl(v,name){save([HEAD,...v.map(line)],name)}
+function dlBulk(){if(!bulkRows.length)bulk();save([['Mã đã nhập',...HEAD],...bulkRows.flatMap(b=>b.m.length?b.m.map(r=>[b.s,...line(r)]):[[b.s,'','','','','','','','Không tìm thấy']])],'kiem_tra_nhieu_ma.csv')}
+</script>
+</body>
+</html>
