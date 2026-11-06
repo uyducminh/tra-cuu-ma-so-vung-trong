@@ -12,6 +12,13 @@ Trang tĩnh (GitHub Pages) để tra cứu mã vùng trồng và mã cơ sở đ
 
 Vào trang cần nhập mã PIN. Dữ liệu trong repo đã được mã hoá theo mã PIN (AES-GCM, khoá sinh bằng PBKDF2), nên không đọc được nếu không có PIN. Mã PIN không được lưu trong repo. Muốn đổi PIN thì chạy lại lệnh cập nhật dữ liệu với PIN mới.
 
+## Lịch sử thao tác và trang quản lý
+
+- Người dùng phải đồng ý lưu cookie và đặt tên trước khi dùng. Tên và mã thiết bị lưu trong cookie 1 năm.
+- Trang ghi lại: vào trang, tìm kiếm (từ khoá, bộ lọc, số kết quả), xem chi tiết mã, kiểm tra nhiều mã, chuyển tab. Nhật ký lưu ở Supabase (dự án bvi-kiem-tra, bảng `tracuu_nhat_ky`); cấu hình kết nối trong `config.js`.
+- Quyền công khai chỉ được ghi thêm nhật ký, không đọc được (RLS). Quản lý xem nhật ký tại `quan-ly.html` bằng mật khẩu; mật khẩu chỉ lưu dạng băm trong database, không có trong repo.
+- SQL tạo bảng và cách đổi mật khẩu quản lý: `supabase/nhat_ky.sql`.
+
 ## Nguồn và nguyên tắc
 
 | Nguồn | Ý nghĩa |

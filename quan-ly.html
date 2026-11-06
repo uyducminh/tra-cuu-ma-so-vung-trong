@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Quản lý: lịch sử tra cứu</title>
+<style>
+:root{--g:#1f6f43;--bd:#d9dee3;--mut:#5b6670;--bg:#f6f8f7}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#1d2329;background:var(--bg);font-size:14px}
+header{background:var(--g);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+header h1{margin:0;font-size:18px}
+header a{color:#fff}
+main{max-width:1280px;margin:0 auto;padding:14px}
+.box{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:12px;margin-bottom:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+.row label{display:flex;flex-direction:column;font-size:12px;color:var(--mut);gap:3px}
+input,select{font:inherit;border:1px solid var(--bd);border-radius:6px;padding:7px 9px;background:#fff}
+button{font:inherit;border:1px solid var(--g);background:var(--g);color:#fff;border-radius:6px;padding:7px 12px;cursor:pointer}
+button.ghost{background:#fff;color:var(--g)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px}
+.card{background:#fff;border:1px solid var(--bd);border-radius:8px;padding:10px 12px}
+.card b{display:block;font-size:22px;color:var(--g)}
+.card span{font-size:12px;color:var(--mut)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:800px){.grid2{grid-template-columns:1fr}}
+h2{font-size:15px;margin:0 0 8px;color:var(--g)}
+.tw{overflow-x:auto;max-height:520px;overflow-y:auto}
+table{border-collapse:collapse;width:100%}
+th,td{border-bottom:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top;font-size:13px}
+th{background:#f0f4f1;white-space:nowrap;position:sticky;top:0}
+td.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+.mut{color:var(--mut);font-size:12px}
+.clk{cursor:pointer;color:var(--g);text-decoration:underline}
+#gate{position:fixed;inset:0;background:var(--g);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+#gate form{background:#fff;border-radius:12px;padding:24px;width:min(380px,100%);display:flex;flex-direction:column;gap:10px;text-align:center}
+#gate h2{margin:0;font-size:17px}
+#gate input{font-size:16px;padding:10px;text-align:center}
+#err{color:#c00;font-size:13px;min-height:18px}
+.pager{display:flex;gap:6px;justify-content:center;margin-top:8px;align-items:center}
+</style>
+</head>
+<body>
+<div id="gate"><form id="gf"><h2>Quản lý: lịch sử tra cứu</h2><input type="password" id="pw" placeholder="Mật khẩu quản lý" autocomplete="current-password"><button type="submit">Vào</button><div id="err"></div></form></div>
+<header><h1>Lịch sử thao tác trên trang tra cứu</h1><span><a href="./">Về trang tra cứu</a> · <a href="#" id="out">Thoát</a></span></header>
+<main>
+  <div class="box"><div class="row">
+    <label>Từ ngày<input type="date" id="tu"></label>
+    <label>Đến ngày<input type="date" id="den"></label>
+    <label>Người dùng<input id="ten" placeholder="Tên (để trống = tất cả)"></label>
+    <label>Thao tác<select id="tt"><option value="">Tất cả</option><option value="vao_trang">Vào trang</option><option value="tim_kiem">Tìm kiếm</option><option value="xem_ma">Xem chi tiết mã</option><option value="kiem_tra_nhieu">Kiểm tra nhiều mã</option><option value="chuyen_tab">Chuyển tab</option></select></label>
+    <button id="go">Xem</button><span class="mut" id="st"></span>
+  </div></div>
+  <div class="cards" id="cards"></div>
+  <div class="grid2">
+    <div class="box"><h2>Theo người dùng</h2><div class="tw"><table><thead><tr><th>Tên</th><th>Thiết bị</th><th>Lượt vào</th><th>Tìm kiếm</th><th>Xem mã</th><th>Kiểm tra nhiều</th><th>Lần cuối</th></tr></thead><tbody id="tu-tb"></tbody></table></div></div>
+    <div class="box"><h2>Mã được xem nhiều nhất</h2><div class="tw"><table><thead><tr><th>Mã</th><th>Tên cơ sở</th><th>Lượt xem</th><th>Số người</th></tr></thead><tbody id="ma-tb"></tbody></table></div></div>
+  </div>
+  <div class="box"><h2>Từ khoá tìm nhiều nhất</h2><div class="tw" style="max-height:260px"><table><thead><tr><th>Từ khoá</th><th>Lượt</th><th>Số người</th><th>Kết quả (lần cuối)</th></tr></thead><tbody id="q-tb"></tbody></table></div></div>
+  <div class="box"><h2>Nhật ký chi tiết</h2><div class="tw"><table><thead><tr><th>Thời gian</th><th>Người dùng</th><th>Thao tác</th><th>Chi tiết</th><th>Thiết bị</th></tr></thead><tbody id="log-tb"></tbody></table></div><div class="pager" id="pg"></div></div>
+</main>
+<script src="config.js"></script>
+<script>
+const C=window.TRA_CUU_CONFIG||{};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const TT={vao_trang:'Vào trang',tim_kiem:'Tìm kiếm',xem_ma:'Xem chi tiết mã',kiem_tra_nhieu:'Kiểm tra nhiều mã',chuyen_tab:'Chuyển tab'};
+const fdt=s=>new Date(s).toLocaleString('vi-VN',{hour12:false});
+const dev=s=>String(s||'').slice(0,8);
+let PW='',ROWS=[],page=0;const PS=100;
+async function rpc(pw){
+  const body={p_mat_khau:pw,p_tu:$('#tu').value?new Date($('#tu').value+'T00:00:00').toISOString():null,p_den:$('#den').value?new Date($('#den').value+'T23:59:59').toISOString():null,p_ten:$('#ten').value.trim()||null,p_thao_tac:$('#tt').value||null,p_gioi_han:20000};
+  const r=await fetch(C.supabaseUrl+'/rest/v1/rpc/tracuu_xem_nhat_ky',{method:'POST',headers:{'apikey':C.supabaseKey,'Authorization':'Bearer '+C.supabaseKey,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json();
+  if(!r.ok)throw new Error(j.message||r.status);
+  return j;
+}
+function d(n){const x=new Date();x.setDate(x.getDate()-n);return x.toISOString().slice(0,10)}
+$('#tu').value=d(30);$('#den').value=d(0);
+async function load(pw){
+  $('#st').textContent='Đang tải...';
+  ROWS=await rpc(pw);
+  $('#st').textContent=`${ROWS.length.toLocaleString('vi-VN')} dòng${ROWS.length>=20000?' (đã đạt giới hạn, hãy thu hẹp khoảng ngày)':''}`;
+  draw();
+}
+function draw(){
+  const users=new Map(),mas=new Map(),qs=new Map(),devs=new Set();
+  for(const r of ROWS){
+    devs.add(r.ma_thiet_bi);
+    const k=r.ten_nguoi_dung;if(!users.has(k))users.set(k,{devs:new Set(),vao:0,tim:0,xem:0,nhieu:0,last:r.thoi_gian});
+    const u=users.get(k);u.devs.add(r.ma_thiet_bi);if(r.thoi_gian>u.last)u.last=r.thoi_gian;
+    const c=r.chi_tiet||{};
+    if(r.thao_tac==='vao_trang')u.vao++;
+    if(r.thao_tac==='tim_kiem'){u.tim++;if(c.q){const q=c.q.trim().toLowerCase();if(!qs.has(q))qs.set(q,{n:0,u:new Set(),kq:c.so_ket_qua});const o=qs.get(q);o.n++;o.u.add(k)}}
+    if(r.thao_tac==='xem_ma'){u.xem++;const m=c.ma||(c.gacc||[])[0]||'';if(!mas.has(m))mas.set(m,{n:0,u:new Set(),ten:c.ten||''});const o=mas.get(m);o.n++;o.u.add(k)}
+    if(r.thao_tac==='kiem_tra_nhieu')u.nhieu++;
+  }
+  const cnt=t=>ROWS.filter(r=>r.thao_tac===t).length;
+  $('#cards').innerHTML=[[ROWS.length,'Tổng thao tác'],[users.size,'Người dùng'],[devs.size,'Thiết bị'],[cnt('tim_kiem'),'Lượt tìm kiếm'],[cnt('xem_ma'),'Lượt xem mã'],[cnt('kiem_tra_nhieu'),'Lượt kiểm tra nhiều mã']].map(x=>`<div class="card"><b>${x[0].toLocaleString('vi-VN')}</b><span>${x[1]}</span></div>`).join('');
+  $('#tu-tb').innerHTML=[...users].sort((a,b)=>b[1].last.localeCompare(a[1].last)).map(([k,u])=>`<tr><td><span class="clk" data-u="${esc(k)}">${esc(k)}</span></td><td>${u.devs.size}</td><td>${u.vao}</td><td>${u.tim}</td><td>${u.xem}</td><td>${u.nhieu}</td><td>${fdt(u.last)}</td></tr>`).join('');
+  $('#tu-tb').querySelectorAll('.clk').forEach(e=>e.onclick=()=>{$('#ten').value=e.dataset.u;load(PW)});
+  $('#ma-tb').innerHTML=[...mas].sort((a,b)=>b[1].n-a[1].n).slice(0,100).map(([m,o])=>`<tr><td class="code">${esc(m)}</td><td>${esc(o.ten)}</td><td>${o.n}</td><td>${o.u.size}</td></tr>`).join('');
+  $('#q-tb').innerHTML=[...qs].sort((a,b)=>b[1].n-a[1].n).slice(0,100).map(([q,o])=>`<tr><td>${esc(q)}</td><td>${o.n}</td><td>${o.u.size}</td><td>${o.kq??''}</td></tr>`).join('');
+  page=0;drawLog();
+}
+function detail(r){
+  const c=r.chi_tiet||{};
+  if(r.thao_tac==='tim_kiem')return `"${esc(c.q||'')}" → ${c.so_ket_qua??''} kết quả${c.loc&&Object.keys(c.loc).length?' · lọc: '+esc(Object.entries(c.loc).map(x=>x[0]+'='+x[1]).join(', ')):''}`;
+  if(r.thao_tac==='xem_ma')return `<span class="code">${esc(c.ma||'')}</span> ${esc(c.ten||'')} <span class="mut">${esc(c.ket_luan||'')}</span>`;
+  if(r.thao_tac==='kiem_tra_nhieu')return `${c.so_ma} mã (${c.da_duyet} đã duyệt, ${c.tam_dung} tạm dừng, ${c.moi_noi_dia} mới có mã nội địa, ${c.khong_thay} không thấy)<br><span class="mut">${esc((c.ds||[]).join(', ')).slice(0,400)}</span>`;
+  if(r.thao_tac==='chuyen_tab')return esc(c.tab||'');
+  return '';
+}
+function drawLog(){
+  const s=ROWS.slice(page*PS,page*PS+PS);
+  $('#log-tb').innerHTML=s.map(r=>`<tr><td>${fdt(r.thoi_gian)}</td><td>${esc(r.ten_nguoi_dung)}</td><td>${TT[r.thao_tac]||esc(r.thao_tac)}</td><td>${detail(r)}</td><td class="mut" title="${esc(r.trinh_duyet)}">${esc(dev(r.ma_thiet_bi))}</td></tr>`).join('');
+  const np=Math.ceil(ROWS.length/PS);
+  $('#pg').innerHTML=np>1?`<button class="ghost" ${page?'':'disabled'} id="pv">‹</button><span>Trang ${page+1}/${np}</span><button class="ghost" ${page<np-1?'':'disabled'} id="nx">›</button>`:'';
+  if(np>1){$('#pv').onclick=()=>{page--;drawLog()};$('#nx').onclick=()=>{page++;drawLog()}}
+}
+async function enter(pw,silent){
+  $('#err').textContent=silent?'':'Đang kiểm tra...';
+  try{await load(pw);PW=pw;sessionStorage.setItem('qlpw',pw);$('#gate').remove()}
+  catch(e){sessionStorage.removeItem('qlpw');$('#err').textContent=silent?'':(/mat khau|mật khẩu|password/i.test(e.message)?'Mật khẩu không đúng':'Lỗi: '+e.message)}
+}
+$('#gf').onsubmit=e=>{e.preventDefault();enter($('#pw').value)};
+$('#go').onclick=()=>load(PW).catch(e=>$('#st').textContent='Lỗi: '+e.message);
+$('#out').onclick=e=>{e.preventDefault();sessionStorage.removeItem('qlpw');location.reload()};
+if(!C.supabaseUrl)$('#err').textContent='Chưa cấu hình kết nối lưu nhật ký (config.js).';
+else if(sessionStorage.getItem('qlpw'))enter(sessionStorage.getItem('qlpw'),true);
+$('#pw').focus();
+</script>
+</body>
+</html>

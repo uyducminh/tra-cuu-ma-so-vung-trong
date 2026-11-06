@@ -61,6 +61,9 @@ h3{font-size:14px;margin:14px 0 6px;color:var(--g)}
 #gate{position:fixed;inset:0;background:var(--g);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 #gate form{background:#fff;border-radius:12px;padding:24px;width:min(380px,100%);display:flex;flex-direction:column;gap:10px;text-align:center}
 #gate h2{margin:0;font-size:17px;color:var(--g)}#gate p{margin:0;color:var(--mut)}#gate input{font:inherit;font-size:16px;padding:10px;border:1px solid var(--bd);border-radius:6px;text-align:center}
+#ten-gate{position:fixed;inset:0;background:var(--g);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+#ten-gate form{background:#fff;border-radius:12px;padding:24px;width:min(420px,100%);display:flex;flex-direction:column;gap:10px;text-align:center}
+#ten-gate h2{margin:0;font-size:17px;color:var(--g)}#ten-gate input#ten-in{font:inherit;font-size:16px;padding:10px;border:1px solid var(--bd);border-radius:6px}
 #gate-err{color:#c00;font-size:13px;min-height:18px}
 footer{max-width:1280px;margin:0 auto;padding:6px 14px 30px;font-size:12px;color:var(--mut);line-height:1.6}
 @media (max-width:640px){.kv{grid-template-columns:1fr}.hide-m{display:none}}
@@ -119,7 +122,9 @@ footer{max-width:1280px;margin:0 auto;padding:6px 14px 30px;font-size:12px;color
   </div>
 </main>
 <dialog id="dlg"><div class="dh"><h2 id="d-title"></h2><button class="ghost" id="d-close" style="background:#fff">Đóng</button></div><div class="db" id="d-body"></div></dialog>
-<footer>Trang tra cứu tĩnh, chạy hoàn toàn trên trình duyệt. Dữ liệu tổng hợp từ Chinaport (GACC), txng.mae.gov.vn và ppd.gov.vn. Không phải trang chính thức của cơ quan nhà nước.</footer>
+<footer><span id="ai"></span>Trang tra cứu tĩnh, chạy hoàn toàn trên trình duyệt. Dữ liệu tổng hợp từ Chinaport (GACC), txng.mae.gov.vn và ppd.gov.vn. Không phải trang chính thức của cơ quan nhà nước. Trang có lưu cookie và ghi lịch sử tra cứu để quản lý theo dõi.</footer>
+<script src="config.js"></script>
+<script src="nhat-ky.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -143,7 +148,7 @@ async function unlock(pin){
 }
 async function tryPin(pin,silent){
   $('#gate-err').textContent=silent?'':'Đang mở...';
-  try{D=await unlock(pin);sessionStorage.setItem('pin',pin);$('#gate').remove();init()}
+  try{D=await unlock(pin);sessionStorage.setItem('pin',pin);$('#gate').remove();NhatKy.require(()=>{init();NhatKy.log('vao_trang',{})})}
   catch(e){sessionStorage.removeItem('pin');$('#gate-err').textContent=silent?'':(e&&e.name==='OperationError'?'Mã PIN không đúng':'Không tải được dữ liệu: '+e)}
 }
 $('#gate-f').onsubmit=e=>{e.preventDefault();tryPin($('#pin').value.trim())};
@@ -174,7 +179,8 @@ function init(){
   let t;$('#q').oninput=()=>{clearTimeout(t);t=setTimeout(run,180)};
   ['#f-kl','#f-loai','#f-tinh','#f-sp','#f-tc','#f-hc','#f-vd'].forEach(s=>$(s).onchange=run);
   $('#reset').onclick=()=>{$('#q').value='';['#f-kl','#f-loai','#f-tinh','#f-sp','#f-tc'].forEach(s=>$(s).value='');$('#f-hc').checked=$('#f-vd').checked=false;run()};
-  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));['tim','nhieu','gt'].forEach(k=>$('#p-'+k).hidden=k!==t.dataset.t)});
+  $('#ai').innerHTML=`Đang dùng tên: <b>${esc(NhatKy.ten())}</b> · <a href="#" id="doi-ten">Đổi tên</a><br>`;$('#doi-ten').onclick=e=>{e.preventDefault();NhatKy.doiTen()};
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{NhatKy.log('chuyen_tab',{tab:t.dataset.t});document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));['tim','nhieu','gt'].forEach(k=>$('#p-'+k).hidden=k!==t.dataset.t)});
   $('#d-close').onclick=()=>$('#dlg').close();
   $('#dlg').addEventListener('click',e=>{if(e.target.id==='dlg')$('#dlg').close()});
   $('#bulk-go').onclick=bulk;
@@ -205,6 +211,7 @@ function run(){
   if(q)view.sort((a,b)=>ex.has(b.i)-ex.has(a.i));
   document.querySelectorAll('.card').forEach(c=>c.classList.toggle('on',c.dataset.k===kl));
   page=0;draw();
+  clearTimeout(window._lt);window._lt=setTimeout(()=>{const loc={ket_luan:kl,loai:lo,tinh:ti,san_pham:sp,tin_cay:tc,han_che:hc,can_kiem_tra:vd};const k=JSON.stringify([q,loc]);if(k!==window._lastLog&&(q||Object.values(loc).some(Boolean))){window._lastLog=k;NhatKy.log('tim_kiem',{q,so_ket_qua:view.length,loc:Object.fromEntries(Object.entries(loc).filter(x=>x[1]))})}},1500);
   const u=new URL(location);q?u.searchParams.set('q',q):u.searchParams.delete('q');u.searchParams.delete('ma');history.replaceState(null,'',u);
 }
 const badge=k=>`<span class="badge k${k}">${KLS[k]}</span>`;
@@ -218,6 +225,7 @@ function draw(){
   if(np>1){$('#pv').onclick=()=>{page--;draw()};$('#nx').onclick=()=>{page++;draw()}}
 }
 function show(r){
+  NhatKy.log('xem_ma',{ma:r.ma,gacc:r.gacc.slice(0,5),ten:r.ten.slice(0,120),ket_luan:KLS[r.kl]});
   $('#d-title').textContent=(r.ma||r.gacc[0]||'')+(r.ten?' · '+r.ten:'');
   const G=D.gacc;
   const gt=r.gacc.map(g=>{const x=G[g]||[];return `<tr><td class="code">${esc(g)}</td><td>${esc(x[1])}${x[9]?'<br><span class="note">'+esc(x[9])+'</span>':''}</td><td>${esc(x[4])}</td><td>${fmtD(x[5])}</td><td>${x[6]?fmtD(x[6]):'Không thời hạn'}</td><td>${x[7]==='Tạm dừng'?'<span class="badge k1">Tạm dừng</span>':'<span class="badge k0">Hiệu lực</span>'}</td><td class="warn">${esc(x[8])}</td></tr>`}).join('');
@@ -240,6 +248,7 @@ function bulk(){
     if(!b.m.length){c[3]++;return `<tr class="nf"><td>${i+1}</td><td class="code">${esc(b.s)}</td><td colspan="5">Không tìm thấy trong dữ liệu (chưa có mã nội địa trong các nguồn đã tổng hợp, hoặc mã nhập sai)</td></tr>`}
     return b.m.map(r=>{c[r.kl]++;return `<tr data-i="${r.i}"><td>${i+1}</td><td class="code">${esc(b.s)}</td><td class="code">${esc(r.ma)}</td><td class="code">${esc(r.gacc.join(', '))}</td><td>${esc(r.ten)}</td><td>${badge(r.kl)}</td><td class="warn">${esc(r.hc)}</td></tr>`}).join('')}).join('');
   $('#bulk-tb').querySelectorAll('tr[data-i]').forEach(tr=>tr.onclick=()=>show(R[+tr.dataset.i]));
+  NhatKy.log('kiem_tra_nhieu',{so_ma:items.length,ds:items.slice(0,200),da_duyet:c[0],tam_dung:c[1],moi_noi_dia:c[2],khong_thay:c[3]});
   $('#bulk-sum').textContent=`${items.length} mã: ${c[0]} đã duyệt, ${c[1]} tạm dừng, ${c[2]} mới có mã nội địa, ${c[3]} không tìm thấy`;
 }
 </script>
